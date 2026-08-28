@@ -1,0 +1,71 @@
+name: Check Upstream Updates
+
+on:
+  schedule:
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  check-upstream:
+    name: Check for upstream changes
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Fetch upstream
+        run: git fetch https://github.com/eduardolat/pgbackweb.git main:upstream-main
+
+      - name: Compare with upstream
+        id: compare
+        run: |
+          if git merge-base --is-ancestor upstream-main HEAD; then
+            echo "behind=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "behind=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "commits<<COMMITS_EOF"
+              git log HEAD..upstream-main --pretty="- %h %s (%an)"
+              echo "COMMITS_EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Find existing issue
+        if: steps.compare.outputs.behind == 'true'
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          number=$(gh issue list --search "\"Upstream has new changes\" in:title" --state open --json number --jq '.[0].number // empty')
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update issue
+        if: steps.compare.outputs.behind == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMITS: ${{ steps.compare.outputs.commits }}
+          ISSUE_NUMBER: ${{ steps.existing.outputs.number }}
+        run: |
+          body="The upstream repository (eduardolat/pgbackweb) has commits on \`main\` that aren't merged into this fork yet:
+
+          $COMMITS
+
+          Compare: https://github.com/${{ github.repository }}/compare/main...eduardolat:pgbackweb:main
+
+          To merge locally:
+          \`\`\`
+          git fetch upstream
+          git merge upstream/main
+          \`\`\`
+          "
+          if [ -n "$ISSUE_NUMBER" ]; then
+            gh issue comment "$ISSUE_NUMBER" --body "$body"
+          else
+            gh issue create --title "Upstream has new changes" --body "$body"
+          fi
