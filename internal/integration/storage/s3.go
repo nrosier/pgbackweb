@@ -11,8 +11,31 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/smithy-go/middleware"
+	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"github.com/eduardolat/pgbackweb/internal/util/strutil"
 )
+
+// removeAcceptEncodingHeaderMiddleware strips the "Accept-Encoding" header
+// that the AWS SDK sets before signing the request. Unlike AWS S3, some
+// S3-compatible providers (e.g. Google Cloud Storage) fail signature
+// validation when this header is part of the signed headers, causing a
+// generic 403 Forbidden on every request.
+// See: https://github.com/aws/aws-sdk-go-v2/issues/1816
+type removeAcceptEncodingHeaderMiddleware struct{}
+
+func (*removeAcceptEncodingHeaderMiddleware) ID() string {
+	return "RemoveAcceptEncodingHeader"
+}
+
+func (*removeAcceptEncodingHeaderMiddleware) HandleFinalize(
+	ctx context.Context, in middleware.FinalizeInput, next middleware.FinalizeHandler,
+) (middleware.FinalizeOutput, middleware.Metadata, error) {
+	if req, ok := in.Request.(*smithyhttp.Request); ok {
+		req.Header.Del("Accept-Encoding")
+	}
+	return next.HandleFinalize(ctx, in)
+}
 
 // createS3Client creates a new S3 client
 func createS3Client(
@@ -45,6 +68,11 @@ func createS3Client(
 
 	s3Client := s3.NewFromConfig(conf, func(o *s3.Options) {
 		o.UsePathStyle = true
+		o.APIOptions = append(o.APIOptions, func(stack *middleware.Stack) error {
+			return stack.Finalize.Insert(
+				&removeAcceptEncodingHeaderMiddleware{}, "Signing", middleware.Before,
+			)
+		})
 	})
 	return s3Client, nil
 }
