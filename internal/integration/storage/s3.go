@@ -43,7 +43,9 @@ func createS3Client(
 		return nil, fmt.Errorf("error initializing storage config: %w", err)
 	}
 
-	s3Client := s3.NewFromConfig(conf)
+	s3Client := s3.NewFromConfig(conf, func(o *s3.Options) {
+		o.UsePathStyle = true
+	})
 	return s3Client, nil
 }
 
