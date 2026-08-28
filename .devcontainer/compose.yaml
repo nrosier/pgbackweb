@@ -33,7 +33,7 @@ services:
 
   adminer:
     container_name: pbw_adminer
-    image: adminer:4.17.1
+    image: adminer:6.0.1
     ports:
       - "8080:8080"
     environment:
