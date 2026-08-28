@@ -19,17 +19,9 @@ on:
           - "yes"
 
 jobs:
-  build-and-push-images:
-    strategy:
-      matrix:
-        vars:
-          [
-            { os: ubuntu-24.04, platform: amd64 },
-            { os: ubuntu-24.04-arm, platform: arm64 },
-          ]
-
-    name: Build and push images
-    runs-on: ${{ matrix.vars.os }}
+  build-and-push-image:
+    name: Build and push image
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:
@@ -50,42 +42,15 @@ jobs:
       - name: Build the Docker image
         run: >
           docker build
-          --tag niqck/pgbackweb:${{ github.event.inputs.tag }}-${{ matrix.vars.platform }}
-          --build-arg TARGETPLATFORM=linux/${{ matrix.vars.platform }}
+          --tag niqck/pgbackweb:${{ github.event.inputs.tag }}
+          --build-arg TARGETPLATFORM=linux/amd64
           --file docker/Dockerfile .
 
       - name: Push the Docker image
-        run: docker push niqck/pgbackweb:${{ github.event.inputs.tag }}-${{ matrix.vars.platform }}
+        run: docker push niqck/pgbackweb:${{ github.event.inputs.tag }}
 
-  merge-and-push-manifest:
-    name: Merge manifest
-    needs: build-and-push-images
-    runs-on: ubuntu-24.04
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.inputs.commit }}
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v4
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
-
-      - name: Merge and push manifest
+      - name: Tag and push as latest
+        if: ${{ github.event.inputs.latest == 'yes' }}
         run: |
-          docker manifest create niqck/pgbackweb:${{ github.event.inputs.tag }} \
-          niqck/pgbackweb:${{ github.event.inputs.tag }}-amd64 \
-          niqck/pgbackweb:${{ github.event.inputs.tag }}-arm64
-
-          docker manifest push niqck/pgbackweb:${{ github.event.inputs.tag }}
-
-          if [ "${{ github.event.inputs.latest }}" == "yes" ]; then
-            docker manifest create niqck/pgbackweb:latest \
-            niqck/pgbackweb:${{ github.event.inputs.tag }}-amd64 \
-            niqck/pgbackweb:${{ github.event.inputs.tag }}-arm64
-
-            docker manifest push niqck/pgbackweb:latest
-          fi
+          docker tag niqck/pgbackweb:${{ github.event.inputs.tag }} niqck/pgbackweb:latest
+          docker push niqck/pgbackweb:latest

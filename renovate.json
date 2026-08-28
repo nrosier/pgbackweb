@@ -1,8 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
+  "extends": ["config:recommended"],
   "labels": ["dependencies"],
   "packageRules": [
     {
@@ -43,9 +41,7 @@
     {
       "customType": "regex",
       "fileMatch": ["/^docker/Dockerfile$/"],
-      "matchStrings": [
-        "(?:^|\\n)\\s*n (?<currentValue>\\d+\\.\\d+\\.\\d+) &&"
-      ],
+      "matchStrings": ["(?:^|\\n)\\s*n (?<currentValue>\\d+\\.\\d+\\.\\d+) &&"],
       "depNameTemplate": "node",
       "datasourceTemplate": "node-version"
     }
