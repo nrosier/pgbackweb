@@ -1,0 +1,53 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "addLabels": ["github-actions"]
+    },
+    {
+      "matchManagers": ["npm"],
+      "groupName": "npm dependencies",
+      "addLabels": ["npm"]
+    },
+    {
+      "matchManagers": ["gomod"],
+      "groupName": "Go dependencies",
+      "addLabels": ["go"]
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "groupName": "Docker base images",
+      "addLabels": ["docker"]
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "groupName": "Pinned CLI tool versions",
+      "addLabels": ["docker"]
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["/^docker/Dockerfile$/"],
+      "matchStrings": [
+        "github\\.com/(?<depName>[\\w-]+/[\\w-]+)/releases/download/(?<currentValue>v[\\w.]+)/"
+      ],
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": ["/^docker/Dockerfile$/"],
+      "matchStrings": [
+        "(?:^|\\n)\\s*n (?<currentValue>\\d+\\.\\d+\\.\\d+) &&"
+      ],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "node-version"
+    }
+  ]
+}
