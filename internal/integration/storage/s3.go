@@ -110,6 +110,24 @@ func (Client) S3Test(
 	return nil
 }
 
+// createS3Uploader creates a new S3 multipart uploader for the given client.
+//
+// manager.Uploader has its own RequestChecksumCalculation setting, independent
+// of the one set on the S3 client passed in: it defaults to "WhenSupported"
+// regardless, and for multipart uploads specifically forces a CRC32 checksum
+// on every UploadPart unless this is set to "WhenRequired" too. Without this,
+// large-enough backups that cross the multipart threshold hit the same GCS
+// trailer-checksum 403 SignatureDoesNotMatch that the client-level setting
+// alone doesn't prevent.
+//
+//nolint:all
+func createS3Uploader(s3Client *s3.Client) *manager.Uploader {
+	//nolint:all
+	return manager.NewUploader(s3Client, func(u *manager.Uploader) {
+		u.RequestChecksumCalculation = aws.RequestChecksumCalculationWhenRequired
+	})
+}
+
 // S3Upload uploads a file to S3 from a reader.
 //
 // Returns the file size, in bytes.
@@ -127,8 +145,7 @@ func (Client) S3Upload(
 	key = strutil.RemoveLeadingSlash(key)
 	contentType := strutil.GetContentTypeFromFileName(key)
 
-	//nolint:all
-	uploader := manager.NewUploader(s3Client)
+	uploader := createS3Uploader(s3Client)
 	//nolint:all
 	_, err = uploader.Upload(
 		context.TODO(),

@@ -23,3 +23,16 @@ func TestCreateS3ClientDisablesDefaultChecksums(t *testing.T) {
 	assert.Equal(t, aws.RequestChecksumCalculationWhenRequired, opts.RequestChecksumCalculation)
 	assert.Equal(t, aws.ResponseChecksumValidationWhenRequired, opts.ResponseChecksumValidation)
 }
+
+// manager.Uploader (used by S3Upload) has its own, separate
+// RequestChecksumCalculation setting that doesn't inherit the S3 client's —
+// it defaults to "WhenSupported" regardless, and forces a checksum on every
+// multipart UploadPart unless this is disabled too. This pins it down so a
+// large-enough upload never regresses back to the default.
+func TestCreateS3UploaderDisablesDefaultChecksums(t *testing.T) {
+	s3Client, err := createS3Client("access-key", "secret-key", "us-east-1", "http://localhost:9000")
+	assert.NoError(t, err)
+
+	uploader := createS3Uploader(s3Client)
+	assert.Equal(t, aws.RequestChecksumCalculationWhenRequired, uploader.RequestChecksumCalculation)
+}
