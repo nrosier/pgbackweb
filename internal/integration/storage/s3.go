@@ -61,6 +61,15 @@ func createS3Client(
 		config.WithRegion(region),
 		config.WithEndpointResolver(endpointResolver),
 		config.WithCredentialsProvider(credentialsProvider),
+		// The SDK's default of "WhenSupported" always attaches a request
+		// checksum, which for a body-bearing call like PutObject is sent as
+		// an aws-chunked trailer. Some S3-compatible providers (e.g. Google
+		// Cloud Storage) don't validate that trailer scheme correctly,
+		// causing PutObject to fail with a 403 SignatureDoesNotMatch even
+		// though checksum-free calls like HeadBucket succeed.
+		// See: https://github.com/aws/aws-sdk-go-v2/issues/2673
+		config.WithRequestChecksumCalculation(aws.RequestChecksumCalculationWhenRequired),
+		config.WithResponseChecksumValidation(aws.ResponseChecksumValidationWhenRequired),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing storage config: %w", err)
