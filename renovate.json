@@ -27,12 +27,29 @@
       "matchManagers": ["custom.regex"],
       "groupName": "Pinned CLI tool versions",
       "addLabels": ["docker"]
+    },
+    {
+      "matchPackageNames": ["golang", "golangci/golangci-lint"],
+      "groupName": "Go toolchain (golang image + golangci-lint)",
+      "addLabels": ["docker"]
+    },
+    {
+      "matchPackageNames": ["github.com/nodxdev/nodxgo**"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false,
+      "description": "nodxgo renamed its module path to github.com/varavelio/nodxgo as of v1.x; skip until we deliberately migrate imports."
+    },
+    {
+      "matchPackageNames": ["tailwindcss", "daisyui"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false,
+      "description": "Tailwind v4 and daisyUI v5 require migrating to a CSS-first config and a new CLI package; skip until we deliberately migrate."
     }
   ],
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["/^docker/Dockerfile$/"],
+      "fileMatch": ["/^docker/Dockerfile(\\.dev)?$/"],
       "matchStrings": [
         "github\\.com/(?<depName>[\\w-]+/[\\w-]+)/releases/download/(?<currentValue>v[\\w.]+)/"
       ],
@@ -40,7 +57,7 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["/^docker/Dockerfile$/"],
+      "fileMatch": ["/^docker/Dockerfile(\\.dev)?$/"],
       "matchStrings": ["(?:^|\\n)\\s*n (?<currentValue>\\d+\\.\\d+\\.\\d+) &&"],
       "depNameTemplate": "node",
       "datasourceTemplate": "node-version"

@@ -53,9 +53,9 @@ RUN set -e && \
     tar -xzf sqlc_1.30.0_linux_amd64.tar.gz && \
     mv ./sqlc /usr/local/bin/sqlc && \
     # Install golangci-lint
-    wget --no-verbose https://github.com/golangci/golangci-lint/releases/download/v2.5.0/golangci-lint-2.5.0-linux-amd64.tar.gz && \
-    tar -xzf golangci-lint-2.5.0-linux-amd64.tar.gz && \
-    mv ./golangci-lint-2.5.0-linux-amd64/golangci-lint /usr/local/bin/golangci-lint && \
+    wget --no-verbose https://github.com/golangci/golangci-lint/releases/download/v2.13.2/golangci-lint-2.13.2-linux-amd64.tar.gz && \
+    tar -xzf golangci-lint-2.13.2-linux-amd64.tar.gz && \
+    mv ./golangci-lint-2.13.2-linux-amd64/golangci-lint /usr/local/bin/golangci-lint && \
 
     # Make downloaded binaries executable
     chmod +x /usr/local/bin/* && \
