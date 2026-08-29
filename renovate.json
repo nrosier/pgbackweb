@@ -45,6 +45,12 @@
       "description": "nodxgo renamed its module path to github.com/varavelio/nodxgo as of v1.x; skip until we deliberately migrate imports."
     },
     {
+      "matchPackageNames": ["github.com/labstack/echo/v4"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false,
+      "description": "echo v5 changes the import path across all usages and changes RealIP() to no longer trust X-Forwarded-For/X-Real-IP by default; skip until we deliberately migrate and configure IPExtractor."
+    },
+    {
       "matchPackageNames": ["tailwindcss", "daisyui"],
       "matchUpdateTypes": ["major"],
       "enabled": false,
