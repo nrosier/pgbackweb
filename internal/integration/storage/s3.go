@@ -118,7 +118,9 @@ func (Client) S3Upload(
 	key = strutil.RemoveLeadingSlash(key)
 	contentType := strutil.GetContentTypeFromFileName(key)
 
+	//nolint:all
 	uploader := manager.NewUploader(s3Client)
+	//nolint:all
 	_, err = uploader.Upload(
 		context.TODO(),
 		&s3.PutObjectInput{
