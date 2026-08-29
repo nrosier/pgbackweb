@@ -21,24 +21,20 @@ COPY --from=golang /usr/local/go /usr/local/go
 RUN set -e && \
     # Create a temp dir for downloads
     mkdir /tmp/downloads && cd /tmp/downloads && \
-    
     # Add PostgreSQL APT repository
     # https://www.postgresql.org/download/linux/debian/
     apt update && apt install -y postgresql-common && \
     /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y && \
-    
     # Install APT packages
     apt update && apt install -y \
         wget unzip tzdata git npm \
         postgresql-client-13 postgresql-client-14 \
         postgresql-client-15 postgresql-client-16 \
         postgresql-client-17 postgresql-client-18 && \
-    
     # Install NodeJS
     apt install -y npm && \
     npm install -g n@latest && \
     n 22.19.0 && \
-
     # Install downloadable binaries
     echo "Downloading amd64 binaries" && \
     # Install task
@@ -56,18 +52,14 @@ RUN set -e && \
     wget --no-verbose https://github.com/golangci/golangci-lint/releases/download/v2.13.2/golangci-lint-2.13.2-linux-amd64.tar.gz && \
     tar -xzf golangci-lint-2.13.2-linux-amd64.tar.gz && \
     mv ./golangci-lint-2.13.2-linux-amd64/golangci-lint /usr/local/bin/golangci-lint && \
-
     # Make downloaded binaries executable
     chmod +x /usr/local/bin/* && \
-
     # Default git config
     # https://github.com/golangci/golangci-lint/issues/4033
     git config --global --add safe.directory '*' && \
-
     # Clean up downloads and APT cache
     mkdir -p /app && cd /app && rm -rf /tmp/downloads && \
     rm -rf /var/lib/apt/lists/* && \
-
     # Create backups dir
     mkdir /backups && \
     chmod 777 /backups
