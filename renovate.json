@@ -1,7 +1,18 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "labels": ["dependencies"],
+  "extends": [
+    "config:recommended"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "postUpdateOptions": [
+    "gomodTidy"
+  ],
+  "env": {
+    "GOPROXY": "https://proxy.golang.org,direct",
+    "GOPRIVATE": ""
+  },
   "packageRules": [
     {
       "matchManagers": ["github-actions"],
