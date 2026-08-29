@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/eduardolat/pgbackweb/internal/database/dbgen"
+	"github.com/eduardolat/pgbackweb/internal/util/echoutil"
 	"github.com/labstack/echo/v4"
 )
 
@@ -18,6 +19,8 @@ func (s *Service) SetSessionCookie(c echo.Context, token string) {
 		Value:    token,
 		MaxAge:   int(maxSessionAge.Seconds()),
 		HttpOnly: true,
+		Secure:   echoutil.IsSecureRequest(c),
+		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
 	}
 	c.SetCookie(&cookie)
@@ -29,6 +32,8 @@ func (s *Service) ClearSessionCookie(c echo.Context) {
 		Value:    "",
 		MaxAge:   -1,
 		HttpOnly: true,
+		Secure:   echoutil.IsSecureRequest(c),
+		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
 	}
 	c.SetCookie(&cookie)

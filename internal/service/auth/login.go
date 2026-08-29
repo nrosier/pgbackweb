@@ -17,7 +17,13 @@ func (s *Service) Login(
 		return dbgen.AuthServiceLoginCreateSessionRow{}, err
 	}
 
-	if err := cryptoutil.VerifyBcryptHash(password, user.Password); err != nil {
+	if !user.Password.Valid {
+		return dbgen.AuthServiceLoginCreateSessionRow{}, fmt.Errorf(
+			"this account has no password set, sign in with SSO instead",
+		)
+	}
+
+	if err := cryptoutil.VerifyBcryptHash(password, user.Password.String); err != nil {
 		return dbgen.AuthServiceLoginCreateSessionRow{}, fmt.Errorf("invalid password")
 	}
 

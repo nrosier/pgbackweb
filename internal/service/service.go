@@ -10,6 +10,7 @@ import (
 	"github.com/eduardolat/pgbackweb/internal/service/databases"
 	"github.com/eduardolat/pgbackweb/internal/service/destinations"
 	"github.com/eduardolat/pgbackweb/internal/service/executions"
+	"github.com/eduardolat/pgbackweb/internal/service/oidc"
 	"github.com/eduardolat/pgbackweb/internal/service/restorations"
 	"github.com/eduardolat/pgbackweb/internal/service/users"
 	"github.com/eduardolat/pgbackweb/internal/service/webhooks"
@@ -22,6 +23,7 @@ type Service struct {
 	DestinationsService *destinations.Service
 	ExecutionsService   *executions.Service
 	UsersService        *users.Service
+	OIDCService         *oidc.Service
 	RestorationsService *restorations.Service
 	WebhooksService     *webhooks.Service
 }
@@ -29,13 +31,17 @@ type Service struct {
 func New(
 	env config.Env, dbgen *dbgen.Queries,
 	cr *cron.Cron, ints *integration.Integration,
-) *Service {
+) (*Service, error) {
 	webhooksService := webhooks.New(dbgen)
 	authService := auth.New(env, dbgen)
 	databasesService := databases.New(env, dbgen, ints, webhooksService)
 	destinationsService := destinations.New(env, dbgen, ints, webhooksService)
 	executionsService := executions.New(env, dbgen, ints, webhooksService)
 	usersService := users.New(dbgen)
+	oidcService, err := oidc.New(env, usersService)
+	if err != nil {
+		return nil, err
+	}
 	backupsService := backups.New(dbgen, cr, executionsService)
 	restorationsService := restorations.New(
 		dbgen, ints, executionsService, databasesService, destinationsService,
@@ -48,7 +54,8 @@ func New(
 		DestinationsService: destinationsService,
 		ExecutionsService:   executionsService,
 		UsersService:        usersService,
+		OIDCService:         oidcService,
 		RestorationsService: restorationsService,
 		WebhooksService:     webhooksService,
-	}
+	}, nil
 }

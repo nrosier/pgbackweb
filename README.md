@@ -138,6 +138,27 @@ You only need to configure the following environment variables:
 
 - `TZ`: Optional. Your [timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). Default is `UTC`. This impacts logging, backup filenames and default timezone in the web interface.
 
+- `PBW_OIDC_ENABLED`: Optional. Set to `true` to enable OIDC/SSO login. Default is `false`. See [OIDC / SSO login](#oidc--sso-login) below.
+
+- `PBW_OIDC_ISSUER_URL`: Required if OIDC is enabled. The issuer URL of your OIDC identity provider.
+
+- `PBW_OIDC_CLIENT_ID` / `PBW_OIDC_CLIENT_SECRET`: Required if OIDC is enabled. The OAuth2 client credentials registered with your identity provider.
+
+- `PBW_OIDC_REDIRECT_URL`: Required if OIDC is enabled. The callback URL registered with your identity provider. Its path must be exactly `<PBW_PATH_PREFIX>/auth/oidc/callback`.
+
+## OIDC / SSO login
+
+PG Back Web supports logging in through an OIDC identity provider (Okta, Authentik, Keycloak, Google Workspace, etc.) as an alternative to a local password.
+
+Because PG Back Web only ever supports a single user account, OIDC login doesn't behave like it would in a typical multi-user app:
+
+- On a fresh install with no user yet, the first successful OIDC login creates that one account.
+- On every later login, it's matched to the existing account, first by identity (provider + subject), then by verified email if not yet linked. It never creates a second account.
+- An OIDC login that doesn't match the existing account is rejected.
+- Once linked, the account's name and email are managed by the identity provider and refreshed on every login, but its local password (if any) is left untouched, so you can still log in with it if the identity provider is ever unreachable.
+
+To enable it, configure `PBW_OIDC_ENABLED=true` along with the issuer URL, client ID/secret and redirect URL described above. Your identity provider must include `sub` and `email` claims, and report `email_verified: true` for that email to be trusted for linking an existing local account; the `name` claim is used if present, otherwise it falls back to the local part of the email.
+
 ## Screenshot
 
 <img src="https://raw.githubusercontent.com/eduardolat/pgbackweb/main/assets/screenshot.png" />

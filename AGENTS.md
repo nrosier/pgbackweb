@@ -75,7 +75,7 @@ Services follow dependency injection with specific patterns:
 ### Configuration
 
 - **Required env vars**: `PBW_ENCRYPTION_KEY`, `PBW_POSTGRES_CONN_STRING`
-- **Optional env vars**: `PBW_LISTEN_HOST`, `PBW_LISTEN_PORT`, `TZ`
+- **Optional env vars**: `PBW_LISTEN_HOST`, `PBW_LISTEN_PORT`, `TZ`, `PBW_OIDC_ENABLED`, `PBW_OIDC_ISSUER_URL`, `PBW_OIDC_CLIENT_ID`, `PBW_OIDC_CLIENT_SECRET`, `PBW_OIDC_REDIRECT_URL`
 - **Validation**: Environment validation happens in `config/env_validate.go`
 
 ### Testing Conventions

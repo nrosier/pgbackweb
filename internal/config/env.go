@@ -13,6 +13,12 @@ type Env struct {
 	PBW_LISTEN_HOST          string `env:"PBW_LISTEN_HOST" envDefault:"0.0.0.0"`
 	PBW_LISTEN_PORT          string `env:"PBW_LISTEN_PORT" envDefault:"8085"`
 	PBW_PATH_PREFIX          string `env:"PBW_PATH_PREFIX" envDefault:""`
+
+	PBW_OIDC_ENABLED       bool   `env:"PBW_OIDC_ENABLED" envDefault:"false"`
+	PBW_OIDC_ISSUER_URL    string `env:"PBW_OIDC_ISSUER_URL" envDefault:""`
+	PBW_OIDC_CLIENT_ID     string `env:"PBW_OIDC_CLIENT_ID" envDefault:""`
+	PBW_OIDC_CLIENT_SECRET string `env:"PBW_OIDC_CLIENT_SECRET" envDefault:""`
+	PBW_OIDC_REDIRECT_URL  string `env:"PBW_OIDC_REDIRECT_URL" envDefault:""`
 }
 
 var (

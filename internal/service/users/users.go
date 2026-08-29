@@ -11,3 +11,8 @@ func New(dbgen *dbgen.Queries) *Service {
 		dbgen: dbgen,
 	}
 }
+
+// IsOIDCUser reports whether the user is linked to an OIDC identity.
+func IsOIDCUser(user dbgen.User) bool {
+	return user.OidcProvider.Valid && user.OidcSubject.Valid
+}

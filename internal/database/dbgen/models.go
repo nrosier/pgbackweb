@@ -93,12 +93,14 @@ type Session struct {
 }
 
 type User struct {
-	ID        uuid.UUID
-	Name      string
-	Email     string
-	Password  string
-	CreatedAt time.Time
-	UpdatedAt sql.NullTime
+	ID           uuid.UUID
+	Name         string
+	Email        string
+	Password     sql.NullString
+	CreatedAt    time.Time
+	UpdatedAt    sql.NullTime
+	OidcProvider sql.NullString
+	OidcSubject  sql.NullString
 }
 
 type Webhook struct {

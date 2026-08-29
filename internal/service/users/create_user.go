@@ -10,11 +10,13 @@ import (
 func (s *Service) CreateUser(
 	ctx context.Context, params dbgen.UsersServiceCreateUserParams,
 ) (dbgen.User, error) {
-	hash, err := cryptoutil.CreateBcryptHash(params.Password)
-	if err != nil {
-		return dbgen.User{}, err
+	if params.Password.Valid {
+		hash, err := cryptoutil.CreateBcryptHash(params.Password.String)
+		if err != nil {
+			return dbgen.User{}, err
+		}
+		params.Password.String = hash
 	}
-	params.Password = hash
 
 	return s.dbgen.UsersServiceCreateUser(ctx, params)
 }

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/eduardolat/pgbackweb/internal/database/dbgen"
+	"github.com/eduardolat/pgbackweb/internal/service/users"
 	"github.com/eduardolat/pgbackweb/internal/util/pathutil"
 	"github.com/eduardolat/pgbackweb/internal/validate"
 	"github.com/eduardolat/pgbackweb/internal/view/reqctx"
@@ -32,12 +33,22 @@ func (h *handlers) updateUserHandler(c echo.Context) error {
 		return respondhtmx.ToastError(c, err.Error())
 	}
 
-	_, err := h.servs.UsersService.UpdateUser(ctx, dbgen.UsersServiceUpdateUserParams{
+	params := dbgen.UsersServiceUpdateUserParams{
 		ID:       reqCtx.User.ID,
 		Name:     sql.NullString{String: formData.Name, Valid: true},
 		Email:    sql.NullString{String: formData.Email, Valid: true},
 		Password: sql.NullString{String: formData.Password, Valid: formData.Password != ""},
-	})
+	}
+
+	// Name and email are managed by the identity provider and refreshed on
+	// every OIDC login, so client-submitted values for them are ignored
+	// here regardless of what the (readonly) form fields posted.
+	if users.IsOIDCUser(reqCtx.User) {
+		params.Name = sql.NullString{Valid: false}
+		params.Email = sql.NullString{Valid: false}
+	}
+
+	_, err := h.servs.UsersService.UpdateUser(ctx, params)
 	if err != nil {
 		return respondhtmx.ToastError(c, err.Error())
 	}
@@ -46,6 +57,15 @@ func (h *handlers) updateUserHandler(c echo.Context) error {
 }
 
 func updateUserForm(user dbgen.User) nodx.Node {
+	isOIDCUser := users.IsOIDCUser(user)
+
+	nameHelpText := ""
+	emailHelpText := ""
+	if isOIDCUser {
+		nameHelpText = "Managed by your identity provider, updated on every SSO login"
+		emailHelpText = nameHelpText
+	}
+
 	return component.CardBox(component.CardBoxParams{
 		Children: []nodx.Node{
 			nodx.FormEl(
@@ -62,8 +82,10 @@ func updateUserForm(user dbgen.User) nodx.Node {
 					Required:     true,
 					Type:         component.InputTypeText,
 					AutoComplete: "name",
+					HelpText:     nameHelpText,
 					Children: []nodx.Node{
 						nodx.Value(user.Name),
+						nodx.If(isOIDCUser, nodx.Readonly("")),
 					},
 				}),
 
@@ -74,8 +96,10 @@ func updateUserForm(user dbgen.User) nodx.Node {
 					Required:     true,
 					AutoComplete: "email",
 					Type:         component.InputTypeEmail,
+					HelpText:     emailHelpText,
 					Children: []nodx.Node{
 						nodx.Value(user.Email),
+						nodx.If(isOIDCUser, nodx.Readonly("")),
 					},
 				}),
 
