@@ -25,8 +25,10 @@ RUN set -e && \
     # https://www.postgresql.org/download/linux/debian/
     apt update && apt install -y postgresql-common && \
     /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y && \
+    # Upgrade already-installed packages to the latest available patches
+    apt update && apt upgrade -y && \
     # Install APT packages
-    apt update && apt install -y \
+    apt install -y \
         wget unzip tzdata git npm \
         postgresql-client-13 postgresql-client-14 \
         postgresql-client-15 postgresql-client-16 \
