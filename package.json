@@ -14,7 +14,7 @@
     "esbuild": "0.28.2",
     "fs-extra": "11.4.0",
     "glob": "13.0.6",
-    "prettier": "3.9.6",
+    "prettier": "3.9.7",
     "tailwindcss": "3.4.19"
   }
 }
