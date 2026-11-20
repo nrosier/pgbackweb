@@ -19,7 +19,7 @@ services:
 
   postgres:
     container_name: pbw_postgres
-    image: postgres:18
+    image: postgres:19
     environment:
       POSTGRES_USER: postgres
       POSTGRES_DB: pgbackweb
